@@ -34,3 +34,17 @@ npm run emulators       # Auth + Firestore + app on http://127.0.0.1:5000/?emula
 npm run test:unit       # no emulator needed; loads index.html's script into a Node sandbox
 npm test                # unit tests + Firestore rules tests
 ```
+
+### End-to-end tests (Playwright)
+Runs the real app in an iPhone-sized Chromium against the local Auth + Firestore + Hosting emulators. Nothing touches your real Firebase project or account; every test creates its own throwaway user.
+```bash
+npm run test:e2e
+npx playwright show-report   # HTML report after a run (traces and screenshots on failure)
+```
+First time on a new machine: `npx playwright install chromium`. The tests serve the Firebase SDK from `node_modules` and pin the date to 1 Dec 2026 so results are repeatable.
+
+| Spec | Covers |
+|---|---|
+| `auth.spec.js` | sign-in screen, create account, sign in, wrong/weak password, device-only mode, stay signed in, sign out |
+| `sync.spec.js` | set saved under `users/{uid}/data`, persists on reload, appears on a second device, users are isolated, offline logging syncs on reconnect |
+| `cycle.spec.js` | phase buttons start at days 1/8/14/21, boundaries 1-7/8-13/14-20/21-40, +1 Day, persistence |
