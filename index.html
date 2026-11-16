@@ -205,6 +205,11 @@ table.t th{font-size:12px;color:var(--muted)}
 </head>
 <body>
 <div id="app"></div>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-backend.js"></script>
 <script>
 (function(){
 'use strict';
@@ -578,7 +583,7 @@ var Store={db:null,uid:'local',timers:{},mem:{},
   lk:function(id){return 'ppw1:'+this.uid+':'+id;},
   localGet:function(id){try{var v=localStorage.getItem(this.lk(id));return v?JSON.parse(v):null;}catch(e){return null;}},
   localSet:function(id,obj){try{localStorage.setItem(this.lk(id),JSON.stringify(obj));}catch(e){}},
-  docRef:function(id){return this.db.collection('data/users/'+this.uid).doc(id);},
+  docRef:function(id){return this.db.collection('users/'+this.uid+'/data').doc(id);},
   save:function(id,body){
     var obj={ts:Date.now(),body:body};
     this.mem[id]=obj;this.localSet(id,obj);
@@ -595,7 +600,7 @@ var Store={db:null,uid:'local',timers:{},mem:{},
       function finish(){if(done)return;done=true;resolve(res);}
       var t=setTimeout(finish,10000);
       if(!self.db){clearTimeout(t);finish();return;}
-      self.db.collection('data/users/'+self.uid).get().then(function(snap){
+      self.db.collection('users/'+self.uid+'/data').get().then(function(snap){
         snap.docs.forEach(function(d){var v=d.data();if(v)res[d.id]=v;});
         clearTimeout(t);finish();
       }).catch(function(){clearTimeout(t);finish();});
@@ -611,8 +616,10 @@ function init(){
   var th=null;try{th=localStorage.getItem('ppw1:theme');}catch(e){}
   if(th==='light'||th==='dark'){S.theme=th;document.documentElement.setAttribute('data-theme',th);}
   pickInitialSelection();render();
-  var ready=(window.claude&&window.claude.use)?Promise.all([window.claude.use('db'),window.claude.use('user')]):Promise.resolve([null,null]);
-  var timeout=new Promise(function(r){setTimeout(function(){r([null,null]);},10000);});
+  var ready,timeout;
+  if(window.AppBackend&&window.AppBackend.configured){ready=window.AppBackend.ready();timeout=new Promise(function(){});}
+  else{ready=(window.claude&&window.claude.use)?Promise.all([window.claude.use('db'),window.claude.use('user')]):Promise.resolve([null,null]);
+  timeout=new Promise(function(r){setTimeout(function(){r([null,null]);},10000);});}
   Promise.race([ready,timeout]).then(function(r){
     var db=r[0],user=r[1];
     if(db&&user&&user.id){return user.id().then(function(id){Store.db=db;Store.uid=id;});}
@@ -1111,6 +1118,7 @@ function viewData(){
   h+='<div class="card stack" style="margin-top:12px"><div><b>Plan start date</b><p class="muted small" style="margin:4px 0 0">The Monday that Month 1, Week 1 begins. Later months follow in order. Your logs stay with their month, so moving this never loses anything. Pick any day and it snaps to that week\u2019s Monday.</p></div><input type="date" class="field" data-f="planstart" value="'+esc(S.meta.planStart||firstPlanStart())+'" aria-label="Plan start date"></div>';
   h+='<div class="card stack" style="margin-top:12px"><div><b>Months</b><p class="muted small" style="margin:4px 0 0">Add a new month when your next plan arrives. It starts as a copy of a month you pick, and you can edit any exercise.</p></div><button class="btn primary" data-act="newmonth">Start a new month</button></div>';
   h+='<div class="card stack" style="margin-top:12px"><div><b>Appearance</b></div><div class="row wrap">'+[['auto','Match device'],['light','Light'],['dark','Dark']].map(function(x){return '<button class="chip" data-act="theme" data-v="'+x[0]+'" aria-pressed="'+(S.theme===x[0])+'">'+x[1]+'</button>';}).join('')+'</div></div>';
+  if(window.AppBackend&&window.AppBackend.configured&&Store.db){h+='<div class="card stack" style="margin-top:12px"><div><b>Account</b><p class="muted small" style="margin:4px 0 0">Your logs sync to your account.</p></div><button class="btn" data-act="signout">Sign out</button></div>';}
   var m=getMonth(S.monthId);
   h+='<div class="card stack" style="margin-top:12px"><div><b>Clear '+esc(m.label)+'</b><p class="muted small" style="margin:4px 0 0">Removes every set and note you logged in this month. The plan stays.</p></div><button class="btn danger" data-act="clearmonth">Clear this month\u2019s logs</button></div>';
   return h;
@@ -1336,6 +1344,7 @@ function act(el){
     case 'pmetric':S.pmetric=v;render();break;
     case 'pickex':S.exKey=v;render();break;
     case 'theme':setTheme(v);break;
+    case 'signout':if(window.AppBackend){AppBackend.signOut().then(function(){location.reload();});}break;
     case 'addset':{var c=touchSession(true),e=exDef(c.m,el.getAttribute('data-ex'));if(!e)break;var rec=ensureEx(c.s,el.getAttribute('data-ex'),e.n);var n=Math.max(e.s,rec.sets.length);while(rec.sets.length<n+1)rec.sets.push({});persistLog(c.m.id);render();break;}
     case 'rmset':{var c1=touchSession(true),k1=el.getAttribute('data-ex'),e1=exDef(c1.m,k1);if(!e1)break;var r1=ensureEx(c1.s,k1,e1.n);var n1=Math.max(e1.s,r1.sets.length);if(n1>1){r1.sets=r1.sets.slice(0,n1-1);while(r1.sets.length<n1-1)r1.sets.push({});}persistLog(c1.m.id);render();break;}
     case 'uselast':{
