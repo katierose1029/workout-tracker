@@ -1,0 +1,12 @@
+/* Progress page: ridge chart, exercise list, line chart, history table. */
+.range{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:6px 0 0}
+.range svg{display:block}
+.exlist{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);margin-top:8px}
+.exlist button{display:flex;width:100%;justify-content:space-between;gap:10px;border:0;border-top:1px solid var(--line);background:none;text-align:left;padding:10px 12px;min-height:44px}
+.exlist button:first-child{border-top:0}
+.exlist button[aria-pressed="true"]{background:var(--accent-bg)}
+.chart{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:8px;margin-top:10px}
+.chart svg{display:block;width:100%;height:auto}
+table.t{width:100%;border-collapse:collapse;font-size:14px}
+table.t td,table.t th{padding:7px 6px;border-top:1px solid var(--line);text-align:left;vertical-align:top}
+table.t th{font-size:12px;color:var(--muted)}

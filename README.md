@@ -6,10 +6,26 @@ At-home workout tracker (training weeks, mobility weeks, cycle phase notes). Run
 1. Open the site link in **Safari**.
 2. Tap Share, then **Add to Home Screen**.
 
-Your logs are saved on that phone. Use the **Data** tab to download a backup (JSON) and **Restore from backup** to load it on another device.
+Your logs are saved on that phone. Use the **Settings** tab (cog icon) to download a backup (JSON) and **Restore from backup** to load it on another device.
+
+## Code layout
+No build step: `index.html` loads plain scripts in order, and they share one global scope.
+
+| Path | What's in it |
+| --- | --- |
+| `css/base.css` | Theme colours, layout, tab bar, buttons, cards, modal |
+| `css/today.css`, `css/month.css`, `css/progress.css` | Styles used only by that page |
+| `js/data/` | The plan, demo video links, mobility routines, cycle phase text |
+| `js/core/` | Logic with no page of its own: helpers, state, program access, storage, stats, mobility, cycle |
+| `js/ui/shell.js` | Page registry, render loop, tab bar, toast, shared modals |
+| `js/ui/plan-editor.js` | Edit-a-day and new-month dialogs (used from several pages) |
+| `js/pages/today.js`, `month.js`, `progress.js`, `settings.js` | One file per page: its view plus its own click (`ACTIONS`), input (`INPUTS`/`CHANGES`) handlers and modals (`MODALS`) |
+| `js/app.js` | Boot: load data, wire events, register the service worker |
+
+To add a page: create `js/pages/<name>.js` that sets `PAGES.<name>={label,view}`, add its id to `TABS` in `js/ui/shell.js` and an icon to `ICON` in `js/core/state.js`, then add the `<script>` to `index.html` and the file to `SHELL` in `sw.js`.
 
 ## Updating
-Replace `index.html` on GitHub. Change `VERSION` in `sw.js` (for example `v1` to `v2`) so phones pick up the new copy.
+Push the changed files to GitHub. Change `VERSION` in `sw.js` (for example `v4` to `v5`) so phones pick up the new copy. If you add a file, also add it to `SHELL` in `sw.js`.
 
 ## Backend (Firebase: Auth + Firestore, free Spark plan)
 Data is stored per user at `users/{uid}/data/{meta | log-<month>}` and cached in `localStorage` so the app still works offline. If Firebase is not configured, the app falls back to on-device storage.
@@ -31,6 +47,6 @@ npm run emulators       # Auth + Firestore + app on http://127.0.0.1:5000/?emula
 
 ### Unit tests
 ```bash
-npm run test:unit       # no emulator needed; loads index.html's script into a Node sandbox
+npm run test:unit       # no emulator needed; loads the app's js/ files into a Node sandbox
 npm test                # unit tests + Firestore rules tests
 ```

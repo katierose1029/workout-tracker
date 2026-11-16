@@ -125,3 +125,18 @@ describe('program and logs', () => {
     assert.strictEqual(a.phaseFor('2026-11-30'), null);
   });
 });
+
+describe('pages', () => {
+  test('every tab has a page, a label and an icon', () => {
+    assert.deepStrictEqual([...a.TABS], ['today', 'month', 'progress', 'settings']);
+    a.TABS.forEach((id) => {
+      assert.strictEqual(typeof a.PAGES[id].view, 'function', id);
+      assert.ok(a.PAGES[id].label, id);
+      assert.ok(a.ICON[id], id);
+    });
+  });
+  test('the Data page is now Settings', () => {
+    assert.strictEqual(a.PAGES.settings.label, 'Settings');
+    assert.strictEqual(a.PAGES.data, undefined);
+  });
+});
