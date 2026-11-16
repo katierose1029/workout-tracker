@@ -28,3 +28,9 @@ npm install
 npm run test:rules      # security-rules tests against the Firestore emulator (needs Java 11+)
 npm run emulators       # Auth + Firestore + app on http://127.0.0.1:5000/?emulator=1
 ```
+
+### Unit tests
+```bash
+npm run test:unit       # no emulator needed; loads index.html's script into a Node sandbox
+npm test                # unit tests + Firestore rules tests
+```
