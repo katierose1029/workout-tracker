@@ -18,4 +18,12 @@ const test = base.test.extend({
 
 const tab = (page, name) => page.locator('nav.tabs').getByRole('button', { name });
 
-module.exports = { test, expect: base.expect, tab, FROZEN_NOW };
+/* Log (and tick done) one set on the Nth exercise card of the Today page. */
+async function logSet(page, { ex = 0, set = 1, weight = '40', reps = '8' } = {}) {
+  const card = page.locator('article.ex').nth(ex);
+  await card.getByLabel(`Set ${set} weight in pounds`).fill(weight);
+  await card.getByLabel(`Set ${set} reps`).fill(reps);
+  await card.getByLabel(`Set ${set} done`).check();
+}
+
+module.exports = { logSet, test, expect: base.expect, tab, FROZEN_NOW };
