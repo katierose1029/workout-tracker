@@ -16,7 +16,12 @@ module.exports = defineConfig({
     hasTouch: true,
     serviceWorkers: 'block',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, hasTouch: true } }],
+  projects: [
+    // Hermetic: device-only mode, no network, no emulator.
+    { name: 'chromium', testIgnore: /\.emu\.spec\.js$/, use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, hasTouch: true } },
+    // Needs the Auth + Firestore emulators: run via `npm run test:e2e:emulator`.
+    { name: 'emulator', testMatch: /\.emu\.spec\.js$/, use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, hasTouch: true } },
+  ],
   webServer: {
     command: 'node tests/e2e/server.js',
     url: `http://127.0.0.1:${PORT}/index.html`,

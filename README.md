@@ -57,3 +57,9 @@ npx playwright install chromium   # first time only
 npm run test:e2e                  # drives the real app in a phone-sized browser
 ```
 Tests live in `tests/e2e/`. They run in "device only" mode (Firebase and font CDNs are blocked) with a frozen clock (Wed 11 Mar 2026), so they need no network or emulator. Import `test` from `tests/e2e/fixtures.js` and use the `app` fixture.
+
+Sign-in and sync tests (`tests/e2e/*.emu.spec.js`) run against the Auth and Firestore emulators (needs Java 11+):
+```bash
+npm run test:e2e:emulator
+```
+They serve the Firebase SDK from `node_modules` and open the app with `?emulator=1`; use `tests/e2e/emulator-fixtures.js`.

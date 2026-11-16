@@ -8,7 +8,7 @@ const FROZEN_NOW = new Date('2026-03-11T10:00:00'); // a Wednesday
 
 const test = base.test.extend({
   app: async ({ page }, use) => {
-    await page.route(/gstatic\.com|googleapis\.com/, (r) => r.abort());
+    await page.route(/^https:\/\/(fonts\.googleapis|www\.gstatic|fonts\.gstatic)\.com/, (r) => r.abort());
     await page.clock.install({ time: FROZEN_NOW });
     await page.goto('/index.html');
     await base.expect(page.getByText('Loading your logs')).toBeHidden();
