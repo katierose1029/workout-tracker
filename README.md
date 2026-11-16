@@ -50,3 +50,10 @@ npm run emulators       # Auth + Firestore + app on http://127.0.0.1:5000/?emula
 npm run test:unit       # no emulator needed; loads the app's js/ files into a Node sandbox
 npm test                # unit tests + Firestore rules tests
 ```
+
+### End-to-end tests
+```bash
+npx playwright install chromium   # first time only
+npm run test:e2e                  # drives the real app in a phone-sized browser
+```
+Tests live in `tests/e2e/`. They run in "device only" mode (Firebase and font CDNs are blocked) with a frozen clock (Wed 11 Mar 2026), so they need no network or emulator. Import `test` from `tests/e2e/fixtures.js` and use the `app` fixture.
