@@ -1,7 +1,29 @@
-/* Offline support. Bump VERSION whenever you upload a new index.html so phones pick it up. */
-var VERSION='v3';
+/* Offline support. Bump VERSION whenever you change any app file (index.html, css/, js/) so phones pick it up. */
+var VERSION='v4';
 var CACHE='workout-tracker-'+VERSION;
-var SHELL=['firebase-config.js','firebase-backend.js','./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
+var SHELL=['firebase-config.js','firebase-backend.js','./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png',
+  'css/base.css',
+  'css/today.css',
+  'css/month.css',
+  'css/progress.css',
+  'js/data/program.js',
+  'js/data/videos.js',
+  'js/data/mobility.js',
+  'js/data/cycle.js',
+  'js/core/helpers.js',
+  'js/core/state.js',
+  'js/core/program.js',
+  'js/core/store.js',
+  'js/core/stats.js',
+  'js/core/mobility.js',
+  'js/core/cycle.js',
+  'js/ui/shell.js',
+  'js/ui/plan-editor.js',
+  'js/pages/today.js',
+  'js/pages/month.js',
+  'js/pages/progress.js',
+  'js/pages/settings.js',
+  'js/app.js'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(SHELL);}).then(function(){return self.skipWaiting();}));});
 self.addEventListener('activate',function(e){e.waitUntil(caches.keys().then(function(ks){return Promise.all(ks.filter(function(k){return k.indexOf('workout-tracker-')===0&&k!==CACHE;}).map(function(k){return caches.delete(k);}));}).then(function(){return self.clients.claim();}));});
 self.addEventListener('fetch',function(e){
