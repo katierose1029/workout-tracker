@@ -6,7 +6,7 @@ const vm = require('node:vm');
 
 const NAMES = ['tc','esc','pad','iso','parseISO','addDays','diffDays','wdIndex','num','clone','nextMonday',
   'fmtNum','normKey','getMonths','getMonth','monthForDate','sessKey','setIsDone','sessionStats','plannedSets',
-  'monthStats','restDone','topWeight','totalReps','fmtSets','weekMonday','phOfDay','adjFor','Store','S','DAYS',
+  'monthStats','restDone','topWeight','totalReps','fmtSets','weekMonday','phOfDay','phaseFor','adjFor','Store','S','DAYS',
   'persistLog','persistMeta','statusText'];
 
 function makeStorage() {

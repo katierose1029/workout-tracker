@@ -113,7 +113,15 @@ describe('program and logs', () => {
     assert.strictEqual(st.sets, 1);
     assert.strictEqual(st.vol, 100);
   });
-  test('phOfDay maps cycle day to phase', () => {
-    assert.deepStrictEqual([1, 7, 8, 13, 14, 15, 16, 28].map(a.phOfDay), ['m', 'm', 'f', 'f', 'o', 'o', 'l', 'l']);
+  test('phOfDay maps cycle day to phase (1-7 M, 8-13 F, 14-20 O, 21+ L)', () => {
+    assert.deepStrictEqual([1, 7, 8, 13, 14, 20, 21, 40].map(a.phOfDay), ['m', 'm', 'f', 'f', 'o', 'o', 'l', 'l']);
+  });
+  test('phaseFor counts forward from the last picked phase start', () => {
+    a.S.meta.cycle = { '2026-12-01': 1 };
+    assert.strictEqual(a.phaseFor('2026-12-08').k, 'f');
+    assert.strictEqual(a.phaseFor('2026-12-14').k, 'o');
+    assert.strictEqual(a.phaseFor('2026-12-20').day, 20);
+    assert.strictEqual(a.phaseFor('2026-12-21').k, 'l');
+    assert.strictEqual(a.phaseFor('2026-11-30'), null);
   });
 });
