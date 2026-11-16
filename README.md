@@ -56,7 +56,7 @@ npm test                # unit tests + Firestore rules tests
 npx playwright install chromium   # first time only
 npm run test:e2e                  # drives the real app in a phone-sized browser
 ```
-Tests live in `tests/e2e/`. They run in "device only" mode (Firebase and font CDNs are blocked) with a frozen clock (Wed 11 Mar 2026), so they need no network or emulator. Import `test` from `tests/e2e/fixtures.js` and use the `app` fixture.
+Tests live in `tests/e2e/`. They run in "device only" mode (Firebase and font CDNs are blocked) with a frozen clock (Wed 11 Mar 2026), so they need no network or emulator. Import `test` from `tests/e2e/fixtures.js` and use the `app` fixture. To start with past workouts or settings, use `test.use({ seed: { logs, meta } })` with the `pastSession()` helper (see the comment above it in `fixtures.js`).
 
 Sign-in and sync tests (`tests/e2e/*.emu.spec.js`) run against the Auth and Firestore emulators (needs Java 11+):
 ```bash

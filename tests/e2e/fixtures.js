@@ -6,8 +6,44 @@ const base = require('@playwright/test');
 
 const FROZEN_NOW = new Date('2026-03-11T10:00:00'); // a Wednesday
 
+/* ---- Seeded history ----------------------------------------------------------------------
+   Preload localStorage (device-only mode) before the app boots, so tests can start with past
+   workouts / settings without clicking them in. Usage:
+
+     test.use({ seed: { logs: { m1: { 'w0-push': pastSession('2026-03-02', { 'Plank': [[0, 60]] }) } },
+                        meta: { cycle: { '2026-03-09': 1 } } } });
+
+   `logs` maps a month id to {sessionKey: session}; session keys look like 'w<week>-<push|quads|pull|glutes>'.
+   The seed is applied once per browser tab (a reload keeps whatever the app has saved since). */
+const normKey = (name) => String(name).toLowerCase().replace(/\bdb\b/g, 'dumbbell').replace(/\bkb\b/g, 'kettlebell')
+  .replace(/\bbw\b/g, 'bodyweight').replace(/[^a-z0-9]+/g, ' ').trim().replace(/\s+/g, '-');
+
+/* A finished session on `date`; lifts = { 'Exercise name': [[weight, reps], ...] } (all sets done). */
+function pastSession(date, lifts) {
+  const ex = {};
+  for (const [name, sets] of Object.entries(lifts)) {
+    ex[normKey(name)] = { n: name, sets: sets.map(([w, r]) => ({ w: String(w), r: String(r), d: true })) };
+  }
+  return { date, done: true, ex };
+}
+
+function seedScript({ logs = {}, meta = null }) {
+  return `(() => {
+    try {
+      if (sessionStorage.getItem('__seeded')) return;
+      const put = (id, body) => localStorage.setItem('ppw1:local:' + id, JSON.stringify({ ts: 1, body }));
+      const logs = ${JSON.stringify(logs)}, meta = ${JSON.stringify(meta)};
+      for (const [month, body] of Object.entries(logs)) put('log-' + month, body);
+      if (meta) put('meta', meta);
+      sessionStorage.setItem('__seeded', '1');
+    } catch (e) {}
+  })();`;
+}
+
 const test = base.test.extend({
-  app: async ({ page }, use) => {
+  seed: [null, { option: true }],
+  app: async ({ page, seed }, use) => {
+    if (seed) await page.addInitScript(seedScript(seed));
     await page.route(/^https:\/\/(fonts\.googleapis|www\.gstatic|fonts\.gstatic)\.com/, (r) => r.abort());
     await page.clock.install({ time: FROZEN_NOW });
     await page.goto('/index.html');
@@ -26,4 +62,4 @@ async function logSet(page, { ex = 0, set = 1, weight = '40', reps = '8' } = {})
   await card.getByLabel(`Set ${set} done`).check();
 }
 
-module.exports = { logSet, test, expect: base.expect, tab, FROZEN_NOW };
+module.exports = { pastSession, normKey, logSet, test, expect: base.expect, tab, FROZEN_NOW };
