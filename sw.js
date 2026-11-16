@@ -1,5 +1,5 @@
 /* Offline support. Bump VERSION whenever you upload a new index.html so phones pick it up. */
-var VERSION='v2';
+var VERSION='v3';
 var CACHE='workout-tracker-'+VERSION;
 var SHELL=['firebase-config.js','firebase-backend.js','./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png'];
 self.addEventListener('install',function(e){e.waitUntil(caches.open(CACHE).then(function(c){return c.addAll(SHELL);}).then(function(){return self.skipWaiting();}));});
