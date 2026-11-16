@@ -15,8 +15,10 @@ after(async () => { await env.cleanup(); });
 beforeEach(async () => { await env.clearFirestore(); });
 
 const good = { ts: Date.now(), body: { sets: 1 } };
-const alice = () => env.authenticatedContext('alice').firestore();
-const bob = () => env.authenticatedContext('bob').firestore();
+const OWNER_EMAIL = 'katiec1029@gmail.com';
+const alice = () => env.authenticatedContext('alice', { email: OWNER_EMAIL }).firestore();
+const bob = () => env.authenticatedContext('bob', { email: 'bob@example.com' }).firestore();
+const aliceWrongEmail = () => env.authenticatedContext('alice', { email: 'someone@else.com' }).firestore();
 const anon = () => env.unauthenticatedContext().firestore();
 
 test('owner can write and read own meta and log docs', async () => {
@@ -48,4 +50,12 @@ test('rejects bad doc ids and bad shapes', async () => {
 test('other paths are denied', async () => {
   await assertFails(setDoc(doc(alice(), 'other/x'), good));
   await assertFails(getDoc(doc(alice(), 'users/alice/secrets/x')));
+});
+test('only the owner email may access, even with a matching uid path', async () => {
+  await setDoc(doc(alice(), 'users/alice/data/meta'), good);
+  await assertFails(getDoc(doc(aliceWrongEmail(), 'users/alice/data/meta')));
+  await assertFails(setDoc(doc(aliceWrongEmail(), 'users/alice/data/meta'), good));
+});
+test('another user cannot read the owner\'s data even via their own uid path', async () => {
+  await assertFails(setDoc(doc(bob(), 'users/bob/data/meta'), good)); // not the owner email
 });

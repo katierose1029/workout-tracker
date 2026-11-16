@@ -48,3 +48,6 @@ First time on a new machine: `npx playwright install chromium`. The tests serve 
 | `auth.spec.js` | sign-in screen, create account, sign in, wrong/weak password, device-only mode, stay signed in, sign out |
 | `sync.spec.js` | set saved under `users/{uid}/data`, persists on reload, appears on a second device, users are isolated, offline logging syncs on reconnect |
 | `cycle.spec.js` | phase buttons start at days 1/8/14/21, boundaries 1-7/8-13/14-20/21-40, +1 Day, persistence |
+
+### Single-user lock
+`firestore.rules` only allows the owner's email (`katiec1029@gmail.com`) to read or write. After editing the rules, publish them in Firebase console > Firestore Database > Rules (or `npx firebase deploy --only firestore:rules`). The e2e tests use `tests/e2e/firestore.e2e.rules` (no email lock) so they can create throwaway users.

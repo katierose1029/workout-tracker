@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // E2E-ONLY variant of firestore.rules: same as production but without the owner-email lock,
+    // so tests can sign up throwaway users. Production rules (with the lock) are covered by tests/firestore.rules.test.js.
+    function isOwner(uid) {
+      return request.auth != null
+        && request.auth.uid == uid;
+    }
+    match /users/{uid}/data/{docId} {
+      allow read: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && docId.matches('^(meta|log-[A-Za-z0-9_-]{1,40})$')
+        && request.resource.data.keys().hasOnly(['ts', 'body'])
+        && request.resource.data.ts is number
+        && request.resource.data.body is map;
+      allow delete: if isOwner(uid);
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
