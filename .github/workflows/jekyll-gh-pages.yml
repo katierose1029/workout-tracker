@@ -22,8 +22,13 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Tests must pass before anything is built or deployed
+  test:
+    uses: ./.github/workflows/tests.yml
+
   # Build job
   build:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
