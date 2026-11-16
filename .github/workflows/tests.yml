@@ -1,0 +1,40 @@
+name: Tests
+
+on:
+  pull_request:
+  push:
+    branches-ignore: ["main"]   # main is tested by the deploy workflow
+  workflow_call:                # reused by the deploy workflow
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:unit
+
+  rules:
+    name: Firestore rules tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npx firebase emulators:exec --project demo-workout-tracker --only firestore "node --test tests/*.test.js"
