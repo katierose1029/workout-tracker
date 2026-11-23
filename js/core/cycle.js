@@ -17,7 +17,7 @@ function adjSet(st,kNow,kLast,unit){
 }
 function sugSets(last,unit){
   if(!cycleOn()||!last)return null;
-  var ph=phaseFor(addDays(S.calWeek,S.dayIdx));if(!ph)return null;
+  var ph=phaseFor(dayDate(S.calWeek,S.dayIdx));if(!ph)return null;
   var lp=last.date?phaseFor(last.date):null;
   var out=last.sets.map(function(x){return adjSet(x,ph.k,lp?lp.k:null,unit);});
   var same=out.every(function(o,i){return num(o.w)===num(last.sets[i].w)&&num(o.r)===num(last.sets[i].r);});

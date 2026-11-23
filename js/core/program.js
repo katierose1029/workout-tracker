@@ -20,9 +20,11 @@ function getMonths(){
 function getMonth(id){var ms=getMonths();for(var i=0;i<ms.length;i++)if(ms[i].id===id)return ms[i];return ms[ms.length-1];}
 function monthForDate(d){
   var ms=getMonths();
-  for(var i=ms.length-1;i>=0;i--){var m=ms[i];if(m.start&&d>=m.start&&d<=addDays(m.start,m.weeks*7-1))return {m:m,week:Math.floor(diffDays(d,m.start)/7)};}
+  for(var i=ms.length-1;i>=0;i--){var m=ms[i];if(m.start&&d>=weekSunday(m.start)&&d<=monthEnd(m))return {m:m,week:Math.floor(diffDays(d,weekSunday(m.start))/7)};}
   return null;
 }
+/* Last day of a month: the Saturday of its final week. */
+function monthEnd(m){return addDays(m.start,m.weeks*7-2);}
 function latestDated(){var ms=getMonths().filter(function(m){return m.start;});ms.sort(function(a,b){return a.start<b.start?-1:1;});return ms[ms.length-1];}
 function contentAt(d){var mp=(S.meta.dayMap||{})[S.calWeek];if(mp&&mp.length===7&&typeof mp[d]==='number')return mp[d];return d<4?d:-1;}
 function liIdx(){return contentAt(S.dayIdx);}
@@ -32,7 +34,7 @@ function weekdayOf(x){if(x>=4)return x;for(var d=0;d<7;d++)if(contentAt(d)===x)r
 function sessKeyFor(week,d){var li=contentAt(d);return li>=0?sessKey(week,li):('w'+week+'-r'+d);}
 function dayStatusFor(m,w,d){var li=contentAt(d);if(li>=0)return dayStatus(m,w,li);var r=getSess(m.id,'w'+w+'-r'+d,false);return restDone(r)?'restdone':'none';}
 function sessKey(week,dayIdx){return dayIdx<4?('w'+week+'-'+DAYS[dayIdx].k):('w'+week+'-r'+dayIdx);}
-function slotDate(m,week,dayIdx){return m.start?addDays(m.start,week*7+dayIdx):null;}
+function slotDate(m,week,dayIdx){return m.start?dayDate(addDays(m.start,week*7),dayIdx):null;}
 function getSess(monthId,key,create){
   var L=S.logs[monthId];
   if(!L){if(!create)return null;L=S.logs[monthId]={};}
@@ -54,7 +56,7 @@ function vlink(name,small){
 function applyPlanStart(){
   var ps=S.meta.planStart;if(!ps)return;
   var cur=weekMonday(ps);
-  PRG.slice().sort(function(a,b){return a.n-b.n;}).forEach(function(m){m.start=cur;m.end=addDays(cur,m.weeks*7-1);cur=addDays(cur,m.weeks*7);});
+  PRG.slice().sort(function(a,b){return a.n-b.n;}).forEach(function(m){m.start=cur;m.end=addDays(cur,m.weeks*7-2);cur=addDays(cur,m.weeks*7);});
 }
 function firstPlanStart(){var ms=PRG.slice().sort(function(a,b){return a.n-b.n;});return ms[0].start;}
 function pickInitialSelection(){
@@ -64,7 +66,7 @@ function pickInitialSelection(){
   var sel=S.meta.sel;
   if(sel&&getMonth(sel.monthId)){S.monthId=sel.monthId;S.week=sel.week||0;return;}
   if(hit){S.monthId=hit.m.id;S.week=hit.week;return;}
-  var dated=getMonths().filter(function(m){return m.start;}),ended=dated.filter(function(m){return addDays(m.start,m.weeks*7-1)<t;});
+  var dated=getMonths().filter(function(m){return m.start;}),ended=dated.filter(function(m){return monthEnd(m)<t;});
   ended.sort(function(x,y){return x.start<y.start?-1:1;});dated.sort(function(x,y){return x.start<y.start?-1:1;});
   var l=ended.length?ended[ended.length-1]:(dated[0]||getMonths()[0]);S.monthId=l.id;S.week=0;
 }

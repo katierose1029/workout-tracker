@@ -9,6 +9,8 @@ var DAYS=[
 ];
 var WD=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 var WD3=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+/* Display order of day indexes: Sunday first, then Monday..Saturday. */
+var WEEK_ORDER=[6,0,1,2,3,4,5];
 var ICON={
   today:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3 2"/></svg>',
   month:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M8 3v4M16 3v4M4 10h16"/></svg>',

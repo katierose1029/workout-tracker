@@ -7,7 +7,7 @@ const vm = require('node:vm');
 const ROOT = path.join(__dirname, '../..');
 const NAMES = ['tc','esc','pad','iso','parseISO','addDays','diffDays','wdIndex','num','clone','nextMonday',
   'fmtNum','normKey','getMonths','getMonth','monthForDate','sessKey','setIsDone','sessionStats','plannedSets',
-  'monthStats','restDone','topWeight','totalReps','fmtSets','weekMonday','phOfDay','phaseFor','adjFor','Store','S','DAYS',
+  'monthStats','restDone','topWeight','totalReps','fmtSets','weekMonday','dayDate','weekSunday','monthEnd','slotDate','phOfDay','phaseFor','adjFor','Store','S','DAYS',
   'persistLog','persistMeta','statusText','PAGES','TABS','ICON'];
 
 function makeStorage() {

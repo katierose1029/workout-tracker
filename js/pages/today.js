@@ -5,16 +5,16 @@ PAGES.today={label:'Today',view:viewToday};
 
 function moveHTML(){
   var custom=!!((S.meta.dayMap||{})[S.calWeek]);
-  var h='<h2>Change workout day</h2><p class="muted small" style="margin:0 0 8px">Move <b>'+esc(labelAt(S.dayIdx))+'</b> to another day. Whatever is on that day swaps places with it. This only changes the week of '+esc(fmtD(S.calWeek))+'.</p><div class="sublist" role="list">';
-  for(var d=0;d<7;d++){if(d===S.dayIdx)continue;h+='<button data-act="moveto" data-v="'+d+'"><span>'+WD[d]+' '+esc(fmtD(addDays(S.calWeek,d)))+'</span><span class="muted small">'+esc(labelAt(d))+'</span></button>';}
+  var h='<h2>Change workout day</h2><p class="muted small" style="margin:0 0 8px">Move <b>'+esc(labelAt(S.dayIdx))+'</b> to another day. Whatever is on that day swaps places with it. This only changes the week of '+esc(fmtD(weekSunday(S.calWeek)))+'.</p><div class="sublist" role="list">';
+  for(var j=0;j<7;j++){var d=WEEK_ORDER[j];if(d===S.dayIdx)continue;h+='<button data-act="moveto" data-v="'+d+'"><span>'+WD[d]+' '+esc(fmtD(dayDate(S.calWeek,d)))+'</span><span class="muted small">'+esc(labelAt(d))+'</span></button>';}
   return h+'</div><div class="row" style="margin-top:12px">'+(custom?'<button class="btn" data-act="resetmap">Reset this week</button>':'')+'<button class="btn" data-act="closemodal">Cancel</button></div>';
 }
 function weekModeCard(){
   var mon=S.calWeek,mob=isMob(mon),cur=weekMonday(todayISO()),sug=suggestedMob(mon);
   return '<section class="card wmode"><div class="row between"><button class="btn sm ghost nav" data-act="calweek" data-v="-1" aria-label="Previous week">‹</button>'
-    +'<div style="text-align:center"><b>Week of '+esc(fmtD(mon))+'</b><div class="muted small">'+(mon===cur?'This week':(mon<cur?'Past week':'Upcoming week'))+(sug?' · suggested mobility week':'')+'</div></div>'
+    +'<div style="text-align:center"><b>Week of '+esc(fmtD(weekSunday(mon)))+'</b><div class="muted small">'+(mon===cur?'This week':(mon<cur?'Past week':'Upcoming week'))+(sug?' · suggested mobility week':'')+'</div></div>'
     +'<button class="btn sm ghost nav" data-act="calweek" data-v="1" aria-label="Next week">›</button></div>'
-    +'<div class="row between wrap" style="margin-top:10px"><label class="small muted">Jump to a date <input type="date" class="mini" style="width:150px" data-f="jumpdate" value="'+esc(mon)+'"></label>'+(mon!==cur?'<button class="btn sm" data-act="calweek" data-v="today">This week</button>':'')+'</div>'
+    +'<div class="row between wrap" style="margin-top:10px"><label class="small muted">Jump to a date <input type="date" class="mini" style="width:150px" data-f="jumpdate" value="'+esc(weekSunday(mon))+'"></label>'+(mon!==cur?'<button class="btn sm" data-act="calweek" data-v="today">This week</button>':'')+'</div>'
     +'<div class="seg" role="group" aria-label="Week type"><button class="chip" data-act="setmob" data-v="0" aria-pressed="'+(!mob)+'">Training week</button><button class="chip" data-act="setmob" data-v="1" aria-pressed="'+mob+'">Mobility week</button></div>'
     +'<div class="muted small" style="margin-top:8px">Choose Training week or Mobility week for the week shown. You can switch any week either way.</div></section>';
 }
@@ -31,10 +31,10 @@ function ticksHTML(train,mob){
 function viewMobility(){
   var mon=S.calWeek,d=S.mobDay,t=todayISO(),day=MOB[mobIdx(mon,d)],s=mobSess(mon,d,false)||{},chk=s.chk||{},m=getMonth(S.monthId),h='';
   var done=0;day.i.forEach(function(x){if(chk[x[0]])done++;});
-  h+='<header class="top"><div><h1>'+esc(fmtLong(addDays(mon,d)))+'</h1><div class="sub">Mobility week</div></div></header>';
+  h+='<header class="top"><div><h1>'+esc(fmtLong(dayDate(mon,d)))+'</h1><div class="sub">Mobility week</div></div></header>';
   h+='<div class="strip" role="group" aria-label="Day of week">';
-  for(var i=0;i<7;i++){
-    var st=mobDayStatus(mon,i),dd=addDays(mon,i);
+  for(var j=0;j<7;j++){
+    var i=WEEK_ORDER[j],st=mobDayStatus(mon,i),dd=dayDate(mon,i);
     h+='<button class="day'+(dd===t?' today':'')+'" style="--pc:var(--c-rest)" data-st="'+st+'" data-act="mobday" data-v="'+i+'" aria-pressed="'+(S.mobDay===i)+'" aria-label="'+WD[i]+' '+esc(fmtD(dd))+', '+esc(MOB[mobIdx(mon,i)].t)+(st==='done'?', mobility done':'')+(trainDoneOn(dd)?', training done':'')+'"><span class="wd">'+WD3[i]+'</span><span class="dn">'+parseISO(dd).getDate()+'</span><span class="pip"></span>'+ticksHTML(trainDoneOn(dd),st==='done')+'</button>';
   }
   h+='</div>'+mobPicker(mon,d)+'<section class="dayhead" style="--pc:var(--c-rest)"><h2>'+esc(day.t)+'</h2><div class="muted small">'+esc(day.s)+'</div>'
@@ -47,7 +47,7 @@ function viewMobility(){
 }
 function cycleCard(){
   if(!cycleOn())return '';
-  var d=isMob(S.calWeek)?S.mobDay:S.dayIdx,date=addDays(S.calWeek,d),ph=phaseFor(date),own=!!(S.meta.cycle&&S.meta.cycle[date]);
+  var d=isMob(S.calWeek)?S.mobDay:S.dayIdx,date=dayDate(S.calWeek,d),ph=phaseFor(date),own=!!(S.meta.cycle&&S.meta.cycle[date]);
   var h='<section class="card cyc"><div class="row between"><b>Cycle Phase</b><span class="muted small">'+esc(fmtD(date))+'</span></div>';
   var mx=Math.max(40,ph?ph.day:0),opts='<option value="">Select day\u2026</option>';
   for(var i=1;i<=mx;i++)opts+='<option value="'+i+'"'+(ph&&ph.day===i?' selected':'')+'>Day '+i+'</option>';
@@ -65,16 +65,16 @@ function viewToday(){
 function viewTraining(){
   var m=getMonth(S.monthId),t=todayISO(),h='';
   if(S.week>=m.weeks)S.week=0;
-  var latest=latestDated(),inM=monthForDate(t),upcoming=getMonths().some(function(x){return x.start&&x.start>t;}),pastEnd=!inM&&!upcoming&&latest&&t>addDays(latest.start,latest.weeks*7-1);
-  h+='<header class="top"><div><h1>'+esc(fmtLong(addDays(S.calWeek,S.dayIdx)))+'</h1><div class="sub">'+esc(m.label)+' \u00b7 Week '+(S.week+1)+'</div></div>'
+  var latest=latestDated(),inM=monthForDate(t),upcoming=getMonths().some(function(x){return x.start&&x.start>t;}),pastEnd=!inM&&!upcoming&&latest&&t>monthEnd(latest);
+  h+='<header class="top"><div><h1>'+esc(fmtLong(dayDate(S.calWeek,S.dayIdx)))+'</h1><div class="sub">'+esc(m.label)+' \u00b7 Week '+(S.week+1)+'</div></div>'
     +'<select class="sel" aria-label="Month" data-act="selmonth">'+monthOptions(m.id)+'</select></header>';
   if(pastEnd){
     h+='<div class="banner"><b>'+esc(latest.label)+' has ended.</b> Add your next month to keep logging.<div style="margin-top:8px"><button class="btn primary sm" data-act="newmonth">Start next month</button></div></div>';
   }
   h+=weekChips(m);
   h+='<div class="strip" role="group" aria-label="Day of week">';
-  for(var d=0;d<7;d++){
-    var li=contentAt(d),st=dayStatusFor(m,S.week,d),dd=addDays(S.calWeek,d),col=li>=0?DAYS[li].col:'var(--c-rest)';
+  for(var j=0;j<7;j++){
+    var d=WEEK_ORDER[j],li=contentAt(d),st=dayStatusFor(m,S.week,d),dd=dayDate(S.calWeek,d),col=li>=0?DAYS[li].col:'var(--c-rest)';
     var isToday=dd&&dd===t;
     h+='<button class="day'+(isToday?' today':'')+'" style="--pc:'+col+'" data-st="'+st+'" data-act="day" data-v="'+d+'" aria-pressed="'+(S.dayIdx===d)+'" aria-label="'+WD[d]+(dd?' '+fmtD(dd):'')+', '+labelAt(d)+(st==='done'||st==='restdone'?', training done':'')+((mobSess(S.calWeek,d,false)||{}).done?', mobility done':'')+'">'
       +'<span class="wd">'+WD3[d]+'</span><span class="dn">'+(dd?parseISO(dd).getDate():(d+1))+'</span><span class="pip"></span><span class="lb">'+(li>=0?DAYS[li].short:'Rest')+'</span>'+ticksHTML(st==='done'||st==='restdone',(mobSess(S.calWeek,d,false)||{}).done)+'</button>';
@@ -101,7 +101,7 @@ function viewLift(m){
   var hist=buildHistory(),st=sessionStats(sess),planned=plannedFor(m,sess,def.k);
   var pct=Math.min(100,planned?Math.round(st.sets/planned*100):0);
   h+='<div class="card"><div class="row between wrap"><div><b id="setprog">'+st.sets+' of '+planned+' sets logged</b><div class="muted small">Done on '
-    +'<input type="date" class="mini" style="width:150px" data-f="date" value="'+esc(sess.date||addDays(S.calWeek,S.dayIdx))+'" aria-label="Date performed"></div></div>'
+    +'<input type="date" class="mini" style="width:150px" data-f="date" value="'+esc(sess.date||dayDate(S.calWeek,S.dayIdx))+'" aria-label="Date performed"></div></div>'
     +'<div class="row"><button class="btn sm ghost" data-act="edit" data-v="'+def.k+'">Edit plan</button></div></div>'
     +'<div class="progress" style="--pc:'+def.col+'"><i id="progbar" style="width:'+pct+'%"></i></div></div>';
   h+=checklist('wu','Warm-up',(m.warm&&m.warm[(d===0||d===2)?'upper':'lower'])||[],sess,d);
@@ -287,7 +287,7 @@ MODALS['rm']=function(M){
 };
 
 /* ---------- actions ---------- */
-ACTIONS['calweek']=function(el,v){S.calWeek=(v==='today')?weekMonday(todayISO()):addDays(S.calWeek,7*(+v));S.dayIdx=S.mobDay=(S.calWeek===weekMonday(todayISO())?wdIndex(todayISO()):0);render();};
+ACTIONS['calweek']=function(el,v){S.calWeek=(v==='today')?weekMonday(todayISO()):addDays(S.calWeek,7*(+v));S.dayIdx=S.mobDay=(S.calWeek===weekMonday(todayISO())?wdIndex(todayISO()):WEEK_ORDER[0]);render();};
 ACTIONS['day']=function(el,v){S.dayIdx=+v;render();};
 ACTIONS['setmob']=function(el,v){S.meta.mob=S.meta.mob||{};S.meta.mob[S.calWeek]=(v==='1');persistMeta();render();};
 ACTIONS['mobday']=function(el,v){S.mobDay=+v;render();};
@@ -295,17 +295,17 @@ ACTIONS['mobfinish']=function(el,v){var ms=mobSess(S.calWeek,S.mobDay,true);ms.d
 ACTIONS['moveday']=function(el,v){S.modal={type:'moveday'};render();};
 ACTIONS['moveto']=function(el,v){var to=+v,mp=currentMap(),fr=S.dayIdx,tmp=mp[fr];mp[fr]=mp[to];mp[to]=tmp;S.meta.dayMap=S.meta.dayMap||{};S.meta.dayMap[S.calWeek]=mp;persistMeta();S.dayIdx=to;S.modal=null;render();toast('Moved to '+WD[to]);};
 ACTIONS['resetmap']=function(el,v){if(S.meta.dayMap)delete S.meta.dayMap[S.calWeek];persistMeta();S.modal=null;render();toast('Back to the usual order');};
-ACTIONS['setphase']=function(el,v){var pd=addDays(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd]=PH_START[v];persistMeta();render();};
-ACTIONS['cycday1']=function(el,v){var pd1=addDays(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd1]=1;persistMeta();render();};
-ACTIONS['cycplus']=function(el,v){var pd2=addDays(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx),p2=phaseFor(pd2);if(p2){S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd2]=p2.day+1;persistMeta();render();}};
-ACTIONS['clearphase']=function(el,v){var cd=addDays(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);if(S.meta.cycle)delete S.meta.cycle[cd];persistMeta();render();};
+ACTIONS['setphase']=function(el,v){var pd=dayDate(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd]=PH_START[v];persistMeta();render();};
+ACTIONS['cycday1']=function(el,v){var pd1=dayDate(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd1]=1;persistMeta();render();};
+ACTIONS['cycplus']=function(el,v){var pd2=dayDate(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx),p2=phaseFor(pd2);if(p2){S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd2]=p2.day+1;persistMeta();render();}};
+ACTIONS['clearphase']=function(el,v){var cd=dayDate(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);if(S.meta.cycle)delete S.meta.cycle[cd];persistMeta();render();};
 ACTIONS['addset']=function(el,v){var c=touchSession(true),e=exDef(c.m,el.getAttribute('data-ex'));if(!e)return;var rec=ensureEx(c.s,el.getAttribute('data-ex'),e.n);var n=Math.max(e.s,rec.sets.length);while(rec.sets.length<n+1)rec.sets.push({});persistLog(c.m.id);render();};
 ACTIONS['rmset']=function(el,v){var c1=touchSession(true),k1=el.getAttribute('data-ex'),e1=exDef(c1.m,k1);if(!e1)return;var r1=ensureEx(c1.s,k1,e1.n);var n1=Math.max(e1.s,r1.sets.length);if(n1>1){r1.sets=r1.sets.slice(0,n1-1);while(r1.sets.length<n1-1)r1.sets.push({});}persistLog(c1.m.id);render();};
 ACTIONS['uselast']=function(el,v){
       var c2=touchSession(true),k2=el.getAttribute('data-ex'),b2=el.getAttribute('data-base'),e2=exDef(c2.m,k2),hist=buildHistory(),past=(hist.H[b2]||[]).filter(function(x){return !(x.mid===c2.m.id&&x.sk===c2.key);});
       var cur=c2.s.date||todayISO(),before=past.filter(function(x){return !x.date||x.date<=cur;}),last=before.length?before[before.length-1]:past[past.length-1];
       if(!last||!e2)return;var rec2=ensureEx(c2.s,k2,e2.n),n2=Math.max(e2.s,last.sets.length);
-      rec2.sets=[];for(var i=0;i<n2;i++){var src=last.sets[Math.min(i,last.sets.length-1)];if(el.getAttribute('data-adj')==='1'){var phx=phaseFor(addDays(S.calWeek,S.dayIdx)),lpx=last.date?phaseFor(last.date):null;if(phx)src=adjSet(src,phx.k,lpx?lpx.k:null,(e2.u||'reps'));}var cur2=rec2.sets[i]={w:src.w||'',r:src.r||'',d:false};}
+      rec2.sets=[];for(var i=0;i<n2;i++){var src=last.sets[Math.min(i,last.sets.length-1)];if(el.getAttribute('data-adj')==='1'){var phx=phaseFor(dayDate(S.calWeek,S.dayIdx)),lpx=last.date?phaseFor(last.date):null;if(phx)src=adjSet(src,phx.k,lpx?lpx.k:null,(e2.u||'reps'));}var cur2=rec2.sets[i]={w:src.w||'',r:src.r||'',d:false};}
       stampDate(c2.s);persistLog(c2.m.id);render();toast('Filled in from last time. Tick each set as you finish it.');};
 ACTIONS['finish']=function(el,v){var c4=touchSession(true);c4.s.done=!c4.s.done;if(c4.s.done)stampDate(c4.s);persistLog(c4.m.id);render();if(c4.s.done)toast('Workout saved');};
 ACTIONS['sub']=function(el,v){openSub(el.getAttribute('data-ex'));};
@@ -368,6 +368,6 @@ CHANGES['pickwo']=function(t){
       else render();
   }else render();
 };
-CHANGES['cycday']=function(t){var cv=parseInt(t.value,10);if(cv>0){var pd3=addDays(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd3]=cv;persistMeta();render();}};
+CHANGES['cycday']=function(t){var cv=parseInt(t.value,10);if(cv>0){var pd3=dayDate(S.calWeek,isMob(S.calWeek)?S.mobDay:S.dayIdx);S.meta.cycle=S.meta.cycle||{};S.meta.cycle[pd3]=cv;persistMeta();render();}};
 CHANGES['jumpdate']=function(t){if(t.value){S.calWeek=weekMonday(t.value);S.dayIdx=S.mobDay=wdIndex(t.value);render();}};
 CHANGES['sub-scope']=function(t){S.modal.scope=t.value;};
