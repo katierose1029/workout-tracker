@@ -1,5 +1,5 @@
 /* Offline support. Bump VERSION whenever you change any app file (index.html, css/, js/) so phones pick it up. */
-var VERSION='v5';
+var VERSION='v6';
 var CACHE='workout-tracker-'+VERSION;
 var SHELL=['firebase-config.js','firebase-backend.js','./','index.html','manifest.webmanifest','icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon.png',
   'css/base.css',

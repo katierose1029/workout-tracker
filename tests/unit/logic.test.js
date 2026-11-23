@@ -24,8 +24,17 @@ describe('dates', () => {
     assert.strictEqual(a.wdIndex('2026-11-30'), 0); // Monday
     assert.strictEqual(a.wdIndex('2026-12-06'), 6); // Sunday
   });
+  test('dayDate / weekSunday put Sunday first', () => {
+    assert.strictEqual(a.weekSunday('2026-11-30'), '2026-11-29');
+    assert.strictEqual(a.dayDate('2026-11-30', 6), '2026-11-29'); // Sunday
+    assert.strictEqual(a.dayDate('2026-11-30', 0), '2026-11-30'); // Monday
+    assert.strictEqual(a.dayDate('2026-11-30', 5), '2026-12-05'); // Saturday
+  });
   test('weekMonday / nextMonday', () => {
     assert.strictEqual(a.weekMonday('2026-12-03'), '2026-11-30');
+    // weeks run Sunday -> Saturday: a Sunday belongs to the week of the following Monday
+    assert.strictEqual(a.weekMonday('2026-11-29'), '2026-11-30');
+    assert.strictEqual(a.weekMonday('2026-12-05'), '2026-11-30');
     assert.strictEqual(a.nextMonday('2026-11-30'), '2026-11-30');
     assert.strictEqual(a.nextMonday('2026-12-01'), '2026-12-07');
   });
@@ -84,6 +93,15 @@ describe('program and logs', () => {
     assert.strictEqual(hit.m.id, m.id);
     assert.strictEqual(hit.week, 1);
     assert.strictEqual(a.monthForDate('1999-01-01'), null);
+  });
+  test('a month runs from the Sunday before its first Monday to a Saturday', () => {
+    const m = a.getMonths().find((x) => x.start);
+    const sun = a.addDays(m.start, -1);
+    assert.strictEqual(a.monthForDate(sun).m.id, m.id);
+    assert.strictEqual(a.monthForDate(sun).week, 0);
+    assert.strictEqual(a.monthForDate(a.addDays(m.start, 6)).week, 1); // the Sunday after week 1's Monday starts week 2
+    assert.strictEqual(a.monthEnd(m), a.addDays(m.start, m.weeks * 7 - 2));
+    assert.strictEqual(a.slotDate(m, 0, 6), sun);
   });
   test('sessKey distinguishes training and rest days', () => {
     assert.strictEqual(a.sessKey(2, 0), 'w2-' + a.DAYS[0].k);

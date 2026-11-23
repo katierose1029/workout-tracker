@@ -47,7 +47,7 @@ MODALS['newmonth']=function(M){
   var h='';
     var ms=getMonths(),lastDated=latestDated();
     h+='<h2>Start a new month</h2><div class="stack"><div><label class="small muted" for="nm-t">Copy exercises from</label><select class="sel" id="nm-t" data-f="nm-t" style="width:100%">'+ms.slice().reverse().map(function(m){return '<option value="'+m.id+'"'+(m.id===M.tpl?' selected':'')+'>'+esc(m.label)+'</option>';}).join('')+'</select></div>'
-      +'<div><label class="small muted" for="nm-d">First Monday</label><input class="field" id="nm-d" type="date" data-f="nm-d" value="'+esc(M.start)+'"></div>'
+      +'<div><label class="small muted" for="nm-d">First week starts (Sunday)</label><input class="field" id="nm-d" type="date" data-f="nm-d" value="'+esc(weekSunday(M.start))+'"></div>'
       +'<div><label class="small muted" for="nm-w">Weeks</label><input class="field" id="nm-w" type="text" inputmode="numeric" data-f="nm-w" value="'+M.weeks+'"></div></div>'
       +'<div class="row" style="margin-top:16px"><button class="btn primary grow" data-act="nm-create">Create month</button><button class="btn" data-act="closemodal">Cancel</button></div>';
   return h;
@@ -64,6 +64,6 @@ ACTIONS['nm-create']=function(el,v){createMonth();};
 INPUTS['ed-n']=function(t){S.modal.ex[+t.getAttribute('data-i')].n=t.value;};
 INPUTS['ed-v']=function(t){S.modal.ex[+t.getAttribute('data-i')].v=t.value;};
 INPUTS['ed-s']=function(t){S.modal.ex[+t.getAttribute('data-i')].s=Math.max(1,Math.min(12,parseInt(t.value,10)||1));};
-INPUTS['nm-d']=function(t){S.modal.start=t.value;};
+INPUTS['nm-d']=function(t){S.modal.start=t.value?nextMonday(t.value):'';};
 INPUTS['nm-w']=function(t){S.modal.weeks=Math.max(1,Math.min(6,parseInt(t.value,10)||4));};
 CHANGES['nm-t']=function(t){S.modal.tpl=t.value;};

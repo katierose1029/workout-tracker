@@ -8,11 +8,11 @@ function viewMonth(){
     +'<select class="sel" aria-label="Month" data-act="selmonth">'+monthOptions(m.id)+'</select></header>';
   h+='<div class="stats"><div class="stat"><b>'+st.sess+'<small class="muted" style="font-size:15px"> / '+st.planned+'</small></b><span>Workouts done</span></div>'
     +'<div class="stat"><b>'+st.sets+'</b><span>Sets logged</span></div><div class="stat"><b>'+(st.vol?fmtNum(st.vol):'\u2013')+'</b><span>Pounds lifted</span></div></div>';
-  h+='<table class="mgrid" aria-label="Month overview"><thead><tr><th></th>'+WD3.map(function(w){return '<th>'+w+'</th>';}).join('')+'</tr></thead><tbody>';
+  h+='<table class="mgrid" aria-label="Month overview"><thead><tr><th></th>'+WEEK_ORDER.map(function(i){return '<th>'+WD3[i]+'</th>';}).join('')+'</tr></thead><tbody>';
   for(var w=0;w<m.weeks;w++){
     h+='<tr><td class="wk">W'+(w+1)+'</td>';
-    for(var d=0;d<7;d++){
-      var s=dayStatus(m,w,d),dd=null,lab=d<4?DAYS[d].short:'';
+    for(var j=0;j<7;j++){
+      var d=WEEK_ORDER[j],s=dayStatus(m,w,d),dd=null,lab=d<4?DAYS[d].short:'';
       var txt=s==='done'||s==='restdone'?'\u2713':(dd?parseISO(dd).getDate():(d<4?lab:'\u00b7'));
       h+='<td><button class="cell" style="--pc:'+(d<4?DAYS[d].col:'var(--c-rest)')+'" data-st="'+s+'" data-act="open" data-w="'+w+'" data-d="'+d+'" aria-label="Week '+(w+1)+' '+WD[d]+(s==='done'||s==='restdone'?', done':'')+'">'+txt+'</button></td>';
     }

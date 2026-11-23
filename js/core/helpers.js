@@ -38,4 +38,8 @@ function normKey(name){
     .replace(/[^a-z0-9]+/g,' ').trim().replace(/\s+/g,'-');
 }
 function fmtNum(n){return n>=1000?(Math.round(n/100)/10)+'k':String(Math.round(n));}
-function weekMonday(iso){return addDays(iso,-wdIndex(iso));}
+/* Weeks run Sunday -> Saturday. Internally a week is still keyed by its Monday and days are indexed
+   Mon=0 .. Sun=6 (so saved logs keep their keys); the Sunday (index 6) is the day BEFORE that Monday. */
+function weekMonday(iso){var i=wdIndex(iso);return addDays(iso,i===6?1:-i);}
+function dayDate(mon,d){return addDays(mon,d===6?-1:d);}
+function weekSunday(mon){return addDays(mon,-1);}
